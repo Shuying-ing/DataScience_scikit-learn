@@ -1,4 +1,5 @@
 import numpy as np
 
-x = np.array([1, 4, 3, -1, 6, 9])
-print(x.argsort()[-5:][::-1])
+idx = np.arange(10)
+true_coef = (-1) ** idx * np.exp(-idx / 10)
+print(true_coef)

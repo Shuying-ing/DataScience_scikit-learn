@@ -1,6 +1,10 @@
 """1.1.2.2. Classification
 
-Classification of text documents using sparse features
+    Classification of text documents using sparse features
+
+Lessons learned
+-----
+- Ridge可以作为分类器模型
 """
 
 from sklearn import datasets
