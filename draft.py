@@ -1,5 +1,10 @@
+import matplotlib.pyplot as plt
 import numpy as np
 
-idx = np.arange(10)
-true_coef = (-1) ** idx * np.exp(-idx / 10)
-print(true_coef)
+x = np.linspace(0.0, 2.0 * np.pi, 100)
+y = np.sin(x)
+
+fig, ax = plt.subplots()
+ax.stem(x, y)
+
+plt.show()
