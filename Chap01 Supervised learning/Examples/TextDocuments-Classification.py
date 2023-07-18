@@ -1,4 +1,6 @@
 """1.1.2.2. Classification
+
+Classification of text documents using sparse features
 """
 
 from sklearn import datasets
@@ -172,7 +174,7 @@ if __name__ == "__main__":
     # with metadata stripping
     X_train, X_test, y_train, y_test, feature_names, target_names = load_dataset(
         verbose=True, remove=("headers", "footers", "quotes")
-    )   # 
+    )
     clf = model(X_train, X_test, y_train, y_test, feature_names, target_names)
     plot_feature_effects(clf, target_names)
 
