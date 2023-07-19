@@ -11,10 +11,14 @@ Maybe Useful
 """
 
 from sklearn import linear_model, datasets
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 import matplotlib.pyplot as plt
+from matplotlib.colors import SymLogNorm
+import seaborn as sns
 import numpy as np
+import pandas as pd
 
 np.random.seed(1314)
 
@@ -341,7 +345,7 @@ def Orthogonal_Matching_Pursuit():
     plt.stem(idx_r, coef[idx_r])
     plt.xlim(0, 512)
     plt.title("Recovered signal from noise-free measurements")
-    
+
     # 拟合加噪数据 + 可视化
     omp.fit(X, y_noisy)
     coef = omp.coef_
@@ -363,14 +367,160 @@ def Orthogonal_Matching_Pursuit():
     plt.tight_layout()
 
 
+def BayesianRidge_Regression():
+    """1.1.10.1. Bayesian Ridge Regression
+
+    Estimate a probabilistic model of the regression problem
+        with regularization parameters included in the estimation procedure
+
+    Notes
+    -----
+    Bayesian regression: the regularization parameter is not set in a hard sense but tuned to the data at hand
+    the selection of initial values of the regularization parameters (alpha, lambda) may be important
+    the prior for the coefficient is given by a spherical Gaussian
+    the regularization parameters alpha/lambda and being estimated by maximizing the log marginal likelihood
+    """
+
+    # 准备数据
+    X = [[0, 0], [1, 1], [2, 2]]
+    y = [0, 1, 3]
+    # 拟合
+    reg = linear_model.BayesianRidge()
+    reg.fit(X, y)
+    y_pred = reg.predict(X)
+    # 测试
+    print("\n------ BayesianRidge_Regression ------")
+    print("Coefficients: ", reg.coef_)
+    print("Intercepts: ", reg.intercept_)
+    print("MSE: %.2f" % mean_squared_error(y, y_pred))
+    r2_score_ridge = r2_score(y, y_pred)
+    print("R2 score: %.2f" % r2_score_ridge)
+
+
+def Automatic_Relevance_Determination():
+    """1.1.10.2. Automatic Relevance Determination - ARD
+
+    Estimate a probabilistic model of the regression problem similar to BayesianRidge_Regression,
+        but that leads to sparser coefficients
+
+    Notes
+    -----
+    the prior for the coefficient drops the spherical Gaussian distribution for a centered elliptic Gaussian distribution
+        --> each coefficient can itself be drawn from a Gaussian distribution
+    ARD = Sparse Bayesian Learning and Relevance Vector Machine
+    """
+
+    # 准备数据
+    X, y, true_weights = datasets.make_regression(
+        n_samples=100,
+        n_features=100,
+        n_informative=10,
+        noise=8,
+        coef=True,
+        random_state=42,
+    )  # informative_feature-帮助 predict the target variable 的特征
+    # 拟合
+    olr = linear_model.LinearRegression().fit(X, y)
+    brr = linear_model.BayesianRidge().fit(X, y)
+    ard = linear_model.ARDRegression().fit(X, y)
+    df = pd.DataFrame(
+        {
+            "Weights of true generative process": true_weights,
+            "ARDRegression": ard.coef_,
+            "BayesianRidge": brr.coef_,
+            "LinearRegression": olr.coef_,
+        }
+    )  # (100, 4)
+    # 可视化——每种模型下的系数
+    plt.figure(figsize=(10, 6))
+    ax = sns.heatmap(
+        df.T,
+        norm=SymLogNorm(linthresh=10e-4, vmin=-80, vmax=80),
+        cbar_kws={"label": "coefficients' values"},
+        cmap="seismic_r",
+    )  # SymLogNorm-scale数据
+    plt.ylabel("linear model")
+    plt.xlabel("cofficients")
+    plt.tight_layout(rect=(0, 0, 1, 0.95))
+    _ = plt.title("Models' cofficients")
+
+
+def Logistic_Regression(C, penalty):
+    """1.1.11. Logistic regression
+
+    Parameters
+    ----------
+    C : float
+
+    penalty : {'l1', 'l2', 'elasticnet', 'none'}
+
+    Notes
+    -----
+    logistic regression = logit regression
+        = maximum-entropy classification (MaxEnt)
+        = log-linear classifier
+    parameter C is inverse of regularization strength
+    be implemented as a linear model for classification rather than regression in terms of the scikit-learn/ML nomenclature
+    a special case of the Generalized Linear Models (GLM)
+    have many many solvers, see 1.1.11.3. Solvers
+    """
+
+    # 准备数据
+    X, y = datasets.load_digits(return_X_y=True)
+    X = StandardScaler().fit_transform(X)
+    y = (y > 4).astype(int)  # astype-把True值置为1 False值置为0
+
+    fig, axes = plt.subplots(3, 3)
+    for i, (C, axes_row) in enumerate(zip((1, 0.1, 0.01), axes)):
+        # 拟合——不同的C/不同的正则化项
+        clf_l1_LR = linear_model.LogisticRegression(
+            C=C, penalty="l1", tol=0.01, solver="saga"
+        )
+        clf_l2_LR = linear_model.LogisticRegression(
+            C=C, penalty="l2", tol=0.01, solver="saga"
+        )
+        clf_en_LR = linear_model.LogisticRegression(
+            C=C, penalty="elasticnet", solver="saga", l1_ratio=0.05, tol=0.01
+        )
+        clf_l1_LR.fit(X, y)
+        clf_l2_LR.fit(X, y)
+        clf_en_LR.fit(X, y)
+
+        coef_l1_LR = clf_l1_LR.coef_.ravel()
+        coef_l2_LR = clf_l2_LR.coef_.ravel()
+        coef_en_LR = clf_en_LR.coef_.ravel()
+
+        # 可视化
+        if i == 0:
+            axes_row[0].set_title("L1 penalty")
+            axes_row[1].set_title("Elastic-Net\nl1_ratio = %s" % 0.05)
+            axes_row[2].set_title("L2 penalty")
+
+        for ax, coefs in zip(axes_row, [coef_l1_LR, coef_en_LR, coef_l2_LR]):
+            ax.imshow(
+                np.abs(coefs.reshape(8, 8)),
+                interpolation="nearest",
+                cmap="binary",
+                vmax=1,
+                vmin=0,
+            )
+            ax.set_xticks(())
+            ax.set_yticks(())
+        axes_row[0].set_ylabel("C = %s" % C)
+        plt.tight_layout()
+
+
 if __name__ == "__main__":
     # Ordinary_LeastSquares_LinearRegression()  # OLS
     # NonNegative_LeastSquares_LinearRegression()  # NNLS
     # Ridge_Regression(alpha=0.5)  # Ridge
     # Ridge_Regression_CrossValidation()  # RidgeCV
-    # Lasso_Regression(alpha=0.1)  # Lasso
+    # Lasso_Regression(alpha=0.1)  # Lasso / LassoCV
     # MultiTask_Lasso_Regression(alpha=0.5)  # multi-task Lasso
-    # ElasticNet(alpha=0.08, l1_ratio=0.5)  # ElasticNet
-    # LARSLasso_Regression(alpha=0.1)  # LARSLasso
-    Orthogonal_Matching_Pursuit()   # OMP
+    # ElasticNet(alpha=0.08, l1_ratio=0.5)  # ElasticNet / ElasticNet
+    # LARSLasso_Regression(alpha=0.1)  # LARSLasso / LARSLasso
+    # Orthogonal_Matching_Pursuit()   # OMP
+    # BayesianRidge_Regression()  # BayesianRidge
+    # Automatic_Relevance_Determination()  # ARD
+    Logistic_Regression(C=0.1, penalty="l2")  # Logistic / LogisticRegressionCV
     plt.show()
