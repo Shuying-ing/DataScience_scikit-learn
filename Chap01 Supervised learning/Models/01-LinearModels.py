@@ -448,6 +448,8 @@ def Automatic_Relevance_Determination():
 def Logistic_Regression(C, penalty):
     """1.1.11. Logistic regression
 
+    Estimate the probability of an event occurring
+    
     Parameters
     ----------
     C : float
@@ -510,6 +512,34 @@ def Logistic_Regression(C, penalty):
         plt.tight_layout()
 
 
+def GeneralizedLinearModels():
+    """1.1.12. Generalized Linear Models
+
+    
+    
+    Notes
+    -----
+    GLM extend linear models:
+        1. the predicted values are linked to a linear combination of the input variables
+        2. the squared loss function is replaced by the unit deviance of a distribution
+    The choice of the distribution depends on the problem at hand.
+    """
+
+    # 准备数据
+    X = [[0, 0], [1, 1], [2, 2]]
+    y = [0, 1, 3]
+    # 拟合
+    reg = linear_model.TweedieRegressor(
+        power=1, alpha=0.5, link="log"
+    )  # power-拟合分布，详见 1.1.12.1. Usage
+    reg.fit(X, y)
+    y_pred = reg.predict(X)
+    # 测试
+    print("\n------ GeneralizedLinearModels ------")
+    r2_score_lasso = r2_score(y, y_pred)
+    print("R2 score: %.2f" % r2_score_lasso)
+
+
 if __name__ == "__main__":
     # Ordinary_LeastSquares_LinearRegression()  # OLS
     # NonNegative_LeastSquares_LinearRegression()  # NNLS
@@ -522,5 +552,6 @@ if __name__ == "__main__":
     # Orthogonal_Matching_Pursuit()   # OMP
     # BayesianRidge_Regression()  # BayesianRidge
     # Automatic_Relevance_Determination()  # ARD
-    Logistic_Regression(C=0.1, penalty="l2")  # Logistic / LogisticRegressionCV
+    # Logistic_Regression(C=0.1, penalty="l2")  # Logistic / LogisticRegressionCV
+    GeneralizedLinearModels()  # GLM
     plt.show()

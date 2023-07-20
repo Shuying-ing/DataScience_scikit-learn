@@ -1,7 +1,8 @@
 """1.1.11. Logistic regression
     1.1.11.2. Multinomial Case
 
-    Comparison of multinomial logistic L1 vs one-versus-rest L1 logistic regression to classify documents
+    Plot multinomial and One-vs-Rest Logistic Regression
+    - Comparison of multinomial logistic L1 vs one-versus-rest L1 logistic regression to classify documents
 
 Lessons learned
 -----
