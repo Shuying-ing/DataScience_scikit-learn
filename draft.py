@@ -8,3 +8,8 @@ fig, ax = plt.subplots()
 ax.stem(x, y)
 
 plt.show()
+
+"""
+make_blobs() function generates a random n-class classification problem with specified parameters
+
+"""
