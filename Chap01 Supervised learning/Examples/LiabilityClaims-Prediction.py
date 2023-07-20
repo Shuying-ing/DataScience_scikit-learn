@@ -5,7 +5,11 @@
 
 Lessons learned
 -----
-
+- The least squares loss of the Ridge regression model seems to cause this model to be badly calibrated.
+    In particular, it tends to underestimate the risk and can even predict invalid negative frequencies.
+    # if (~mask).any():
+- Using the Poisson loss with a log-link can correct these problems and lead to a well-calibrated linear model.
+- Traditional regression metrics such as MSE and MAE are hard to meaningfully interpret on count values with many zeros.
 """
 
 from sklearn.datasets import fetch_openml  # fetch_openml-调用OpenML接口
