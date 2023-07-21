@@ -32,7 +32,6 @@ from sklearn.metrics import (
 )
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
 
 def load_dataset():
@@ -72,9 +71,9 @@ def model(df_train, df_test):
             ("passthrough_numeric", "passthrough", ["BonusMalus"]),
             (
                 "binned_numeric",
-                KBinsDiscretizer(n_bins=10, subsample=int(2e5), random_state=0),
+                KBinsDiscretizer(n_bins=10),
                 ["VehAge", "DrivAge"],
-            ),  # KBinsDiscretizer-将连续数据分成等宽的bins
+            ),  # KBinsDiscretizer-将连续数据分成等宽的bins subsample=int(2e5), random_state=0
             ("log_scaled_numeric", log_scale_transformer, ["Density"]),
             (
                 "onehot_categorical",
@@ -92,7 +91,7 @@ def model(df_train, df_test):
             ("regressor", DummyRegressor(strategy="mean")),
         ]
     ).fit(
-        df_train, df_test["Frequency"], regressor__sample_weight=df_train["Exposure"]
+        df_train, df_train["Frequency"], regressor__sample_weight=df_train["Exposure"]
     )  # 根据自定义字段对损失函数加权
 
     # 拟合——Ridge_glm
@@ -109,8 +108,8 @@ def model(df_train, df_test):
     poisson_glm = Pipeline(
         [
             ("preprocessor", linear_model_preprocessor),
-            ("regressor", PoissonRegressor(alpha=1e-12, solver="newton-cholesky")),
-        ]
+            ("regressor", PoissonRegressor(alpha=1e-12)),
+        ]  # solver="newton-cholesky"
     ).fit(
         df_train, df_train["Frequency"], regressor__sample_weight=df_train["Exposure"]
     )
@@ -155,7 +154,6 @@ def score_estimator(estimator, df_test):
 
 
 if __name__ == "__main__":
-
     # 准备数据
     df_train, df_test = load_dataset()
     # 拟合
