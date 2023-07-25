@@ -705,6 +705,7 @@ def Quantile_Regressor():
         y_pred = qr.fit(X, y_normal).predict(X)
         predictions[quantile] = y_pred
 
+        # 找外点，满足下边两个条件才会被当作外点
         if quantile == min(quantiles):
             out_bounds_predictions = np.logical_or(
                 out_bounds_predictions, y_pred >= y_normal
