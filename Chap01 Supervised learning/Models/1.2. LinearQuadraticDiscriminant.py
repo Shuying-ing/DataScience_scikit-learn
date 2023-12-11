@@ -1,3 +1,15 @@
+"""
+Two classic classifiers
+- Linear Discriminant Analysis, LDA
+- Quadratic Discriminant Analysis, QDA
+
+- These classifiers have closed-form solutions.
+- LinearDiscriminantAnalysis can be used to perform supervised dimensionality reduction.
+
+理论部分没有完全看懂
+"""
+
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib import colors
@@ -52,7 +64,7 @@ def plot_data(lda, X, y, y_pred, fig_index):
         plt.ylabel("Data with\n varying covariances")
 
     tp = y == y_pred  # tp=true_positive
-    tp0, tp1 = tp[y == 0], tp[y == 1]   # [y == 0] y=0的下标
+    tp0, tp1 = tp[y == 0], tp[y == 1]  # [y == 0] y=0的下标
     X0, X1 = X[y == 0], X[y == 1]  # 真实结果为0和1的所有样本
     X0_tp, X0_fp = X0[tp0], X0[~tp0]
     X1_tp, X1_fp = X1[tp1], X1[~tp1]
@@ -147,7 +159,6 @@ def plot_qda_cov(qda, splot):
 
 
 if __name__ == "__main__":
-
     plt.figure(figsize=(10, 8), facecolor="white")
     plt.suptitle(
         "Linear Discriminant Analysis vs Quadratic Discriminant Analysis",
